@@ -23,10 +23,19 @@ namespace File_Manager
 
             Button backbtn = new Button();
             backbtn.Text = "Back";
-            backbtn.Size = new Size(500, 50);
-            backbtn.Location = new Point(10, 0);
+            backbtn.Size = new Size(50, 30);
+            backbtn.Location = new Point(10, 5);
             backbtn.Click += (s, e) => { goback(path); };
             this.Controls.Add(backbtn);
+
+            Label title = new Label();
+
+            title.Text = new DirectoryInfo(filePath).Name;
+
+            title.Location = new Point(63, 11);
+            title.Size = new Size(300, 30);
+            title.Font = new Font("Arial", 12);
+            this.Controls.Add(title);
 
             int i = 1;
             try
@@ -35,8 +44,8 @@ namespace File_Manager
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Failed to show directories. (" + ex.Message + ")", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                listdrives();
+                MessageBox.Show("Please enter a valid path.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
             foreach (string folder in Directory.GetDirectories(filePath))
@@ -44,9 +53,10 @@ namespace File_Manager
                 if(!new DirectoryInfo(folder).Attributes.HasFlag(FileAttributes.Hidden))
                 {
                     Button folderName = new Button();
-                    folderName.Size = new Size(500, 50);
+                    folderName.Size = new Size(500, 38);
+                    folderName.TextAlign = ContentAlignment.MiddleLeft;
                     folderName.Text = folder.Replace(filePath, "").Replace("\\", "");
-                    folderName.Location = new Point(10, i * 50);
+                    folderName.Location = new Point(10, i * 40);
                     folderName.Click += (s, e) => { path = folder; this.Text = "File Manager - " + path; listcontents(path); };
                     this.Controls.Add(folderName);
                     i++;
@@ -58,8 +68,9 @@ namespace File_Manager
                 if (!new FileInfo(filePath).Attributes.HasFlag(FileAttributes.Hidden))
                 {
                     Button fileName = new Button();
-                    fileName.Size = new Size(500, 50);
+                    fileName.Size = new Size(500, 38);
                     fileName.Text = file.Replace(filePath, "").Replace("\\", "");
+                    fileName.TextAlign = ContentAlignment.MiddleLeft;
                     fileName.Click += (s, e) => {
                         Process cmd = new Process();
                         cmd.StartInfo.FileName = "cmd.exe";
@@ -68,10 +79,20 @@ namespace File_Manager
                         cmd.StartInfo.Arguments = "/c \"" + file + "\"";
                         cmd.Start();
                     };
-                    fileName.Location = new Point(10, i * 50);
+                    fileName.Location = new Point(10, i * 40);
                     this.Controls.Add(fileName);
                     i++;
                 }
+            }
+
+            if(i == 1)
+            {
+                Label infolabel = new Label();
+                infolabel.Text = "This folder is empty.";
+                infolabel.Size = new Size(500, 38);
+                infolabel.Location = new Point(10, i * 50);
+                infolabel.Font = new Font("Arial", 10);
+                this.Controls.Add(infolabel);
             }
         }
 
@@ -133,16 +154,6 @@ namespace File_Manager
             desktop.Location = new Point(10, i * 50);
             this.Controls.Add(desktop);
 
-            Button downloads = new Button();
-            downloads.Size = new Size(120, 45);
-            downloads.Text = "Downloads";
-            downloads.Click += (s, e) => {
-                this.Text = "File Manager - Downloads";
-                listcontents("C:\\Users\\" + Environment.UserName + "\\Downloads\\"); 
-            };
-            downloads.Location = new Point(135, i * 50);
-            this.Controls.Add(downloads);
-
             Button docs = new Button();
             docs.Size = new Size(120, 45);
             docs.Text = "Documents";
@@ -153,15 +164,42 @@ namespace File_Manager
             docs.Location = new Point(260, i * 50);
             this.Controls.Add(docs);
 
+            Button downloads = new Button();
+            downloads.Size = new Size(120, 45);
+            downloads.Text = "Downloads";
+            downloads.Click += (s, e) => {
+                this.Text = "File Manager - Downloads";
+                listcontents("C:\\Users\\" + Environment.UserName + "\\Downloads\\"); 
+            };
+            downloads.Location = new Point(135, i * 50);
+            this.Controls.Add(downloads);
+
             Button plus = new Button();
             plus.Size = new Size(120, 45);
             plus.Text = "Custom...";
             plus.Click += (o, e) => {
                 string newPath = Microsoft.VisualBasic.Interaction.InputBox("Enter your custom location", "Custom location", "");
-                MessageBox.Show("you just found an unfinished function 👀", "wow");
+                if (newPath != "") {
+                    try
+                    {
+                        listcontents(newPath);
+                    }
+                    catch
+                    {
+                        return;
+                    }
+                }
             };
             plus.Location = new Point(385, i * 50);
             this.Controls.Add(plus);
+
+            i++;
+
+            Label author = new Label();
+            author.Text = "Made with ❤ in Hungary";
+            author.Size = new Size(200, 100);
+            author.Location = new Point(10, i * 53);
+            this.Controls.Add(author);
         }
 
         public void goback(string currentPath)
