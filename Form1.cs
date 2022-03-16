@@ -13,6 +13,7 @@ namespace File_Manager
         public void Form1_Load(object sender, EventArgs e)
         {
             this.AutoScroll = true;
+            this.Icon = this.Icon = new Icon("media/icon.ico"); ;
             this.KeyPreview = true;
             listdrives();
         }
@@ -115,6 +116,7 @@ namespace File_Manager
             {
                 Button driveBtn = new Button();
                 string label = "";
+
                 driveBtn.TextAlign = ContentAlignment.MiddleLeft;
 
                 if(drive.VolumeLabel == "")
@@ -161,7 +163,7 @@ namespace File_Manager
                 this.Text = "File Manager - Documents";
                 listcontents("C:\\Users\\" + Environment.UserName + "\\Documents\\");
             };
-            docs.Location = new Point(260, i * 50);
+            docs.Location = new Point(135, i * 50);
             this.Controls.Add(docs);
 
             Button downloads = new Button();
@@ -171,7 +173,7 @@ namespace File_Manager
                 this.Text = "File Manager - Downloads";
                 listcontents("C:\\Users\\" + Environment.UserName + "\\Downloads\\"); 
             };
-            downloads.Location = new Point(135, i * 50);
+            downloads.Location = new Point(260, i * 50);
             this.Controls.Add(downloads);
 
             Button plus = new Button();
@@ -195,11 +197,11 @@ namespace File_Manager
 
             i++;
 
-            Label author = new Label();
+            /* Label author = new Label();
             author.Text = "Made with ❤ in Hungary";
             author.Size = new Size(200, 100);
             author.Location = new Point(10, i * 53);
-            this.Controls.Add(author);
+            this.Controls.Add(author); */
         }
 
         public void goback(string currentPath)
