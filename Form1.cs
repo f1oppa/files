@@ -8,19 +8,42 @@ namespace File_Manager
         public Form1()
         {
             InitializeComponent();
+
+            ContextMenuStrip mainStrip = new ContextMenuStrip();
+            ToolStripMenuItem refreshItem = new ToolStripMenuItem();
+            ToolStripMenuItem openItem = new ToolStripMenuItem();
+            ToolStripMenuItem aboutItem = new ToolStripMenuItem();
+            ToolStripMenuItem gotoItem = new ToolStripMenuItem();
+
+            refreshItem.Click += new EventHandler(refreshItem_Click);
+            refreshItem.Text = "Refresh (F5)";
+            mainStrip.Items.Add(refreshItem);
+
+            gotoItem.Click += new EventHandler(gotoItem_Click);
+            gotoItem.Text = "Go to";
+            mainStrip.Items.Add(gotoItem);
+
+            aboutItem.Click += new EventHandler(aboutItem_Click);
+            aboutItem.Text = "About";
+            mainStrip.Items.Add(aboutItem);
+
+            this.ContextMenuStrip = mainStrip;
         }
 
         public void Form1_Load(object sender, EventArgs e)
         {
             this.AutoScroll = true;
-            this.Icon = this.Icon = new Icon("media/icon.ico"); ;
+            this.Icon = new Icon("icon.ico"); ;
             this.KeyPreview = true;
+
             listdrives();
         }
 
         public void listcontents(String filePath)
         {
             this.Controls.Clear();
+
+            this.Text = "File Manager - " + filePath;
 
             Button backbtn = new Button();
             backbtn.Text = "Back";
@@ -39,15 +62,6 @@ namespace File_Manager
             this.Controls.Add(title);
 
             int i = 1;
-            try
-            {
-                Directory.GetDirectories(filePath);
-            }
-            catch (Exception ex)
-            {
-                listdrives();
-                MessageBox.Show("Please enter a valid path.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
 
             foreach (string folder in Directory.GetDirectories(filePath))
             {
@@ -119,13 +133,21 @@ namespace File_Manager
 
                 driveBtn.TextAlign = ContentAlignment.MiddleLeft;
 
-                if(drive.VolumeLabel == "")
+                try
                 {
-                    label = "Local Disk";
+                    if (drive.VolumeLabel == "")
+                    {
+                        label = "Local Disk";
+                    }
+                    else
+                    {
+                        label = drive.VolumeLabel;
+                    }
                 }
-                else
+                catch
                 {
-                    label = drive.VolumeLabel;
+                    label = "Unknown filesystem";
+                    driveBtn.Enabled = false;
                 }
 
                 driveBtn.Text = label + " (" + drive.Name.Replace("\\", "") + ")";
@@ -150,8 +172,9 @@ namespace File_Manager
             desktop.Size = new Size(120, 45);
             desktop.Text = "Desktop";
             desktop.Click += (s, e) => {
+                path = "C:\\Users\\" + Environment.UserName + "\\Desktop";
                 this.Text = "File Manager - Desktop";
-                listcontents("C:\\Users\\" + Environment.UserName + "\\Desktop\\");
+                listcontents("C:\\Users\\" + Environment.UserName + "\\Desktop");
             };
             desktop.Location = new Point(10, i * 50);
             this.Controls.Add(desktop);
@@ -160,8 +183,9 @@ namespace File_Manager
             docs.Size = new Size(120, 45);
             docs.Text = "Documents";
             docs.Click += (s, e) => {
+                path = "C:\\Users\\" + Environment.UserName + "\\Documents";
                 this.Text = "File Manager - Documents";
-                listcontents("C:\\Users\\" + Environment.UserName + "\\Documents\\");
+                listcontents("C:\\Users\\" + Environment.UserName + "\\Documents");
             };
             docs.Location = new Point(135, i * 50);
             this.Controls.Add(docs);
@@ -170,8 +194,9 @@ namespace File_Manager
             downloads.Size = new Size(120, 45);
             downloads.Text = "Downloads";
             downloads.Click += (s, e) => {
+                path = "C:\\Users\\" + Environment.UserName + "\\Downloads";
                 this.Text = "File Manager - Downloads";
-                listcontents("C:\\Users\\" + Environment.UserName + "\\Downloads\\"); 
+                listcontents("C:\\Users\\" + Environment.UserName + "\\Downloads"); 
             };
             downloads.Location = new Point(260, i * 50);
             this.Controls.Add(downloads);
@@ -180,28 +205,12 @@ namespace File_Manager
             plus.Size = new Size(120, 45);
             plus.Text = "Custom...";
             plus.Click += (o, e) => {
-                string newPath = Microsoft.VisualBasic.Interaction.InputBox("Enter your custom location", "Custom location", "");
-                if (newPath != "") {
-                    try
-                    {
-                        listcontents(newPath);
-                    }
-                    catch
-                    {
-                        return;
-                    }
-                }
+                goTo();
             };
             plus.Location = new Point(385, i * 50);
             this.Controls.Add(plus);
 
             i++;
-
-            /* Label author = new Label();
-            author.Text = "Made with ❤ in Hungary";
-            author.Size = new Size(200, 100);
-            author.Location = new Point(10, i * 53);
-            this.Controls.Add(author); */
         }
 
         public void goback(string currentPath)
@@ -214,8 +223,54 @@ namespace File_Manager
             else
             {
                 path = Directory.GetParent(currentPath).FullName;
-                this.Text = "File Manager - " + path;
                 listcontents(path);
+            }
+        }
+
+        public void refresh()
+        {
+            if (Directory.Exists(path))
+            {
+                listcontents(path);
+            }
+            else
+            {
+                listdrives();
+            }
+        }
+
+        public void refreshItem_Click(object sender, EventArgs e)
+        {
+            refresh();
+        }
+
+        public void aboutItem_Click(object sender, EventArgs e)
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                UseShellExecute = true,
+                FileName = "https://github.com/f1oppa/files"
+            }).Dispose();
+        }
+        public void gotoItem_Click(object sender, EventArgs e)
+        {
+            goTo();
+        }
+
+        public void goTo()
+        {
+            string newPath = Microsoft.VisualBasic.Interaction.InputBox("Enter the location you want to go to.", "Go to", "");
+            if(newPath != "")
+            {
+                if (Directory.Exists(newPath))
+                {
+                    listcontents(newPath);
+                    path = newPath;
+                }
+                else
+                {
+                    MessageBox.Show("Not a valid path", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 
@@ -224,6 +279,11 @@ namespace File_Manager
             if (keyData == Keys.Escape)
             {
                 goback(path);
+                return true;
+            }
+            if (keyData == Keys.F5)
+            {
+                refresh();
                 return true;
             }
             return base.ProcessCmdKey(ref msg, keyData);
